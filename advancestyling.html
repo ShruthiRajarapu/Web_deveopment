@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Responsive Web with Quiz & API</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      background-color: #f4f7fa;
+      color: #333;
+      padding: 1rem;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      color: white;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #777;
+    }
+
+    .quiz-container, .joke-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .question {
+      font-weight: bold;
+    }
+
+    .options label {
+      display: block;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      background-color: #4facfe;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+      width: fit-content;
+    }
+
+    button:hover {
+      background-color: #007acc;
+    }
+
+    .result {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    .joke {
+      font-style: italic;
+      color: #444;
+      margin-top: 1rem;
+    }
+
+    /* Tablet */
+    @media (min-width: 600px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+
+      .card {
+        flex: 1 1 48%;
+      }
+    }
+
+    /* Desktop */
+    @media (min-width: 1024px) {
+      body {
+        font-size: 18px;
+        padding: 2rem;
+      }
+
+      .card {
+        flex: 1 1 30%;
+      }
+
+      header {
+        padding: 3rem 2rem;
+      }
+
+      h1 {
+        font-size: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to My Responsive Site</h1>
+    <p>Built with HTML, CSS, JavaScript, and API integration</p>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Quick Quiz</h2>
+      <div class="quiz-container" id="quiz"></div>
+      <button onclick="submitQuiz()">Submit Quiz</button>
+      <div class="result" id="result"></div>
+    </section>
+
+    <section class="card">
+      <h2>Get a Programming Joke</h2>
+      <div class="joke-container">
+        <button onclick="fetchJoke()">Fetch Joke</button>
+        <div class="joke" id="joke">Click the button to load a joke!</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>About This Site</h2>
+      <p>This page demonstrates responsive design using media queries, JavaScript interactivity with a quiz, and real-time data fetching from a public API (jokes).</p>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 Responsive Design Project. All rights reserved.
+  </footer>
+
+  <script>
+    // Quiz Questions
+    const questions = [
+      {
+        question: "What does HTML stand for?",
+        options: ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Markup Language"],
+        answer: "Hyper Text Markup Language"
+      },
+      {
+        question: "Which CSS property is used to change the background color?",
+        options: ["color", "background-color", "bgcolor"],
+        answer: "background-color"
+      },
+      {
+        question: "Which language runs in a web browser?",
+        options: ["Java", "C", "JavaScript", "Python"],
+        answer: "JavaScript"
+      }
+    ];
+
+    function loadQuiz() {
+      const quizContainer = document.getElementById("quiz");
+      quizContainer.innerHTML = "";
+
+      questions.forEach((q, index) => {
+        const questionDiv = document.createElement("div");
+        questionDiv.classList.add("question-block");
+
+        questionDiv.innerHTML = `
+          <div class="question">${index + 1}. ${q.question}</div>
+          <div class="options">
+            ${q.options.map(option => `
+              <label>
+                <input type="radio" name="question${index}" value="${option}">
+                ${option}
+              </label>`).join('')}
+          </div>
+        `;
+        quizContainer.appendChild(questionDiv);
+      });
+    }
+
+    function submitQuiz() {
+      let score = 0;
+      questions.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="question${index}"]:checked`);
+        if (selected && selected.value === q.answer) {
+          score++;
+        }
+      });
+
+      const resultDiv = document.getElementById("result");
+      resultDiv.textContent = `You scored ${score} out of ${questions.length}`;
+    }
+
+    // Joke API Fetch
+    async function fetchJoke() {
+      const jokeDiv = document.getElementById("joke");
+      jokeDiv.textContent = "Loading joke...";
+      try {
+        const res = await fetch("https://official-joke-api.appspot.com/jokes/programming/random");
+        const data = await res.json();
+        const joke = data[0];
+        jokeDiv.textContent = `${joke.setup} — ${joke.punchline}`;
+      } catch (err) {
+        jokeDiv.textContent = "Failed to fetch joke. Try again!";
+        console.error(err);
+      }
+    }
+
+    window.onload = loadQuiz;
+  </script>
+</body>
+</html>
